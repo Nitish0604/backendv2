@@ -124,11 +124,19 @@ const getRestaurantDetailsById = async (req, res) => {
 
         // Populate menuItem field for each category
         await Promise.all(restaurant.category.map(async (categoryId, index) => {
-            restaurant.category[index] = await categorySchema.findById(categoryId._id).populate('menuItems');
+            restaurant.category[index] = await categorySchema.findById(categoryId._id).populate({
+                path: 'menuItems',
+                populate: { path: 'comments' } // Populate the comments field within menuItems
+            });
+        }));
+
+        // Populate comments field for each menu item
+        await Promise.all(restaurant.menu.map(async (menuId, index) => {
+            restaurant.menu[index] = await menuItemSchema.findById(menuId).populate('comments');
         }));
 
         res.status(200).json({ 
-            message : 'Data fetched successfully',
+            message: 'Data fetched successfully',
             restaurant
         });
 
@@ -139,5 +147,4 @@ const getRestaurantDetailsById = async (req, res) => {
         });
     }
 };
-
 module.exports = { registerRestaurant,login,getRestaurantDetailsById };
